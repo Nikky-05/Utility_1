@@ -1,0 +1,29 @@
+cd "C:\Users\hp\Downloads\TokenInfo Viewer\TokenInfo Viewer"
+& ".\.venv\Scripts\activate"
+python install_service.py remove
+python install_service.py install
+# run as admin!
+python install_service.py start
+
+
+.\.venv\Scripts\activate
+
+
+nssm start TokenInfoViewer
+
+
+
+| Action         | Command                               |
+| -------------- | ------------------------------------- |
+| Stop service   | `nssm stop TokenInfoViewer`           |
+| Remove service | `nssm remove TokenInfoViewer confirm` |
+| Check status   | `sc query TokenInfoViewer`            |
+
+
+
+
+| Field                  | Value                                                                              |
+| ---------------------- | ---------------------------------------------------------------------------------- |
+| **Path:**              | `C:\Users\hp\Downloads\TokenInfo Viewer\TokenInfo Viewer\.venv\Scripts\python.exe` |
+| **Startup directory:** | `C:\Users\hp\Downloads\TokenInfo Viewer\TokenInfo Viewer`                          |
+| **Arguments:**         | `app.py`                                                                           |

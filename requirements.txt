@@ -1,0 +1,5 @@
+python-pkcs11>=0.7,<1.0
+cryptography>=41,<45
+
+Flask>=3.0,<4
+

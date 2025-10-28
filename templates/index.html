@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TokenInfo Viewer | Utility</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Roboto, sans-serif;
+      background-color: #f5f7fb;
+      color: #333;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background-color: #004aad;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 0;
+    }
+
+    .sidebar h1 {
+      font-size: 20px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .menu-item {
+      padding: 14px 24px;
+      cursor: pointer;
+      color: white;
+      font-size: 15px;
+      transition: all 0.2s ease;
+    }
+
+    .menu-item:hover, .menu-item.active {
+      background-color: #0062ff;
+    }
+
+    /* Main content */
+    .main {
+      flex: 1;
+      background: white;
+      border-left: 1px solid #e3e6ed;
+      padding: 30px 40px;
+      overflow-y: auto;
+    }
+
+    .header {
+      font-size: 22px;
+      font-weight: 600;
+      color: #004aad;
+      margin-bottom: 10px;
+    }
+
+    .subheader {
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e3e6ed;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.04);
+      max-width: 650px;
+    }
+
+    /* Token box like emBridge dropdown */
+    .token-box {
+      background: #f8f9fc;
+      border: 1px solid #d1d9e6;
+      border-radius: 6px;
+      padding: 12px 15px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .token-box:hover {
+      background: #eef3ff;
+    }
+
+    .token-name {
+      font-weight: 500;
+      color: #004aad;
+    }
+
+    .token-serial {
+      color: #555;
+      font-size: 13px;
+    }
+
+    button {
+      padding: 10px 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.25s ease;
+    }
+
+    .btn-primary {
+      background-color: #004aad;
+      color: white;
+      margin-top: 10px;
+    }
+
+    .btn-primary:hover {
+      background-color: #0062ff;
+    }
+
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .toggle-label {
+      font-size: 15px;
+      color: #333;
+    }
+
+    footer {
+      margin-top: 30px;
+      text-align: center;
+      color: #888;
+      font-size: 13px;
+    }
+
+    @media (max-width: 800px) {
+      body {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-around;
+      }
+      .menu-item {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h1>Utility</h1>
+    <div class="menu-item active" onclick="showSection('providers')">Providers</div>
+    <div class="menu-item" onclick="showSection('certificates')">Certificates</div>
+    <div class="menu-item" onclick="showSection('sign')">Data Sign</div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <!-- Providers Section -->
+    <div id="providers" class="section">
+      <div class="header">Providers</div>
+      <div class="subheader">List of available token providers connected to your system</div>
+      <div class="card">
+        <div class="toggle-container">
+          <label class="toggle-label">Connected Token</label>
+          <input type="checkbox" id="tokenSwitch">
+        </div>
+        <button class="btn-primary" id="btnListProviders" onclick="loadTokens()">List Providers</button>
+        <div id="providerList" style="margin-top:20px;"></div>
+      </div>
+    </div>
+
+    <!-- Certificates Section -->
+    <div id="certificates" class="section" style="display:none;">
+      <div class="header">Certificates</div>
+      <div class="subheader">View certificates stored in your connected token</div>
+      <div class="card">
+        <label>🔌 Select Token Provider</label>
+        <select id="providerDropdown">
+          <option value="">-- Detecting tokens... --</option>
+        </select>
+        <button class="btn-primary" onclick="loadCerts()">List Certificates</button>
+
+        <label>🔑 Enter Token PIN</label>
+        <input id="pin" type="password" placeholder="Enter your USB token PIN">
+
+        <div id="certList" style="margin-top:20px;"></div>
+        <p id="status" class="status"></p>
+      </div>
+    </div>
+
+    <!-- Sign PDF Section -->
+    <div id="sign" class="section" style="display:none;">
+      <div class="header">Data Sign</div>
+      <div class="subheader">Digitally sign your PDF documents using selected certificate</div>
+      <div class="card">
+        <label>📜 Select Certificate</label>
+        <select id="certDropdown">
+          <option value="">-- Choose a certificate --</option>
+        </select>
+
+        <label>📁 Upload PDF Document</label>
+        <input type="file" id="pdfFile" accept=".pdf">
+
+        <button class="btn-primary" onclick="signPDF()">✍️ Sign PDF</button>
+        <p id="signStatus" class="status"></p>
+      </div>
+    </div>
+
+    <footer>© 2025 TokenInfo Viewer | Utility Replica</footer>
+  </div>
+
+  <script>
+    // Sidebar section switching
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+      document.getElementById(id).style.display = 'block';
+      event.target.classList.add('active');
+    }
+
+    // Load tokens (providers)
+    // Load tokens (providers)
+  async function loadTokens() {
+    const btn = document.getElementById("btnListProviders");
+    const providerList = document.getElementById("providerList");
+    const dropdown = document.getElementById("providerDropdown");
+    btn.disabled = true;
+    btn.innerText = "Scanning...";
+    providerList.innerHTML = "<p>🔍 Scanning for tokens...</p>";
+
+    try {
+      const res = await fetch("/api/tokens");
+      const data = await res.json();
+      const tokens = data.tokens || [];
+
+      providerList.innerHTML = "";
+      dropdown.innerHTML = '<option value="">-- Select a Token Provider --</option>';
+
+      if (tokens.length === 0) {
+        providerList.innerHTML = `<p>⚠️ No tokens detected. Please connect your USB token.</p>`;
+      } else {
+        tokens.forEach(t => {
+          const tokenDiv = document.createElement("div");
+          tokenDiv.className = "token-box";
+          tokenDiv.innerHTML = `
+            <div class="token-name">${t.label || "Unknown Token"}</div>
+            <div class="token-serial">${t.serial || "N/A"}</div>
+          `;
+          providerList.appendChild(tokenDiv);
+
+          const opt = document.createElement("option");
+          opt.value = t.serial;
+          opt.textContent = `${t.label || "Unknown Token"} (${t.serial || "N/A"})`;
+          dropdown.appendChild(opt);
+        });
+      }
+    } catch (err) {
+      providerList.innerHTML = "<p>❌ Error loading token providers.</p>";
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "List Providers";
+    }
+  }
+
+    // Other logic unchanged (certs + signing)
+  async function loadCerts() {
+  const pin = document.getElementById("pin").value.trim();
+  const provider = document.getElementById("providerDropdown").value;
+  const certList = document.getElementById("certList");
+  const status = document.getElementById("status");
+  certList.innerHTML = "";
+  status.textContent = "🔍 Reading certificates...";
+
+  // Get selected token’s library path (from stored tokens)
+  const resTokens = await fetch("/api/tokens");
+  const tokens = (await resTokens.json()).tokens || [];
+  const selectedToken = tokens.find(t => t.serial === provider);
+
+  if (!selectedToken) {
+    status.textContent = "⚠️ Invalid token selected.";
+    return;
+  }
+
+  const res = await fetch("/api/certificates", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ pin, library: selectedToken.library })
+  });
+
+  const data = await res.json();
+  if (data.certificates && data.certificates.length) {
+    status.textContent = "✅ Certificates loaded successfully!";
+    document.getElementById("certDropdown").innerHTML =
+      '<option value="">-- Select certificate --</option>' +
+      data.certificates.map(c =>
+        `<option value="${c.serial}">${c.subject}</option>`
+      ).join("");
+    certList.innerHTML = data.certificates.map(c =>
+      `<div class="token-box"><b>${c.subject}</b><br>Issuer: ${c.issuer}<br>Serial: ${c.serial}</div>`
+    ).join("");
+  } else {
+    status.textContent = data.error || "⚠️ No certificates found or wrong PIN.";
+  }
+}
+
+   async function signPDF() {
+  const file = document.getElementById("pdfFile").files[0];
+  const cert = document.getElementById("certDropdown").value;
+  const status = document.getElementById("signStatus");
+  if (!file || !cert) {
+    status.textContent = "⚠️ Please select a certificate and upload a PDF.";
+    return;
+  }
+
+  status.textContent = "✍️ Signing...";
+  const form = new FormData();
+  form.append("pdf", file);
+  form.append("cert_serial", cert);
+  form.append("library", document.getElementById("providerDropdown").value);
+  form.append("pin", document.getElementById("pin").value);
+
+  const res = await fetch("/api/sign", { method: "POST", body: form });
+  const data = await res.json();
+  if (res.ok && data.message) {
+    status.textContent = "✅ PDF signed successfully!";
+  } else {
+    status.textContent = "❌ Signing failed: " + (data.error || "Unknown error");
+  }
+}
+
+    window.addEventListener("DOMContentLoaded", loadTokens);
+  </script>
+</body>
+</html>
